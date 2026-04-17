@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MindAR 圖像辨識測試</title>
 
-  <!-- MindAR + A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -21,7 +20,7 @@
       overflow: hidden;
     }
 
-    /* ── HUD overlay ── */
+    /* ── HUD ── */
     #hud {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -30,12 +29,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 18px 20px 0;
-      gap: 12px;
+      padding: 14px 20px 0;
+      gap: 10px;
     }
 
     #title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       letter-spacing: .06em;
       text-transform: uppercase;
@@ -43,14 +42,44 @@
       text-shadow: 0 0 20px rgba(99,179,237,.7);
     }
 
+    /* tab switcher */
+    #tab-bar {
+      display: flex;
+      gap: 8px;
+      pointer-events: all;
+      background: rgba(20,20,35,.75);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 999px;
+      padding: 4px;
+      backdrop-filter: blur(14px);
+    }
+
+    .tab-btn {
+      padding: 6px 18px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(200,210,255,.6);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .25s, color .25s, box-shadow .25s;
+      letter-spacing: .04em;
+    }
+    .tab-btn.active {
+      background: rgba(99,179,237,.25);
+      color: #93c5fd;
+      box-shadow: 0 0 14px rgba(99,179,237,.3);
+    }
+
     /* status pill */
     #status-pill {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 18px;
+      padding: 7px 18px;
       border-radius: 999px;
-      font-size: .82rem;
+      font-size: .8rem;
       font-weight: 600;
       letter-spacing: .04em;
       backdrop-filter: blur(12px);
@@ -60,21 +89,18 @@
       color: rgba(200,200,220,.9);
       box-shadow: 0 4px 20px rgba(0,0,0,.4);
     }
-
     #status-pill.searching {
       background: rgba(20,30,60,.75);
       border-color: rgba(99,179,237,.4);
       color: #93c5fd;
       box-shadow: 0 0 20px rgba(99,179,237,.25);
     }
-
     #status-pill.found {
       background: rgba(6,78,59,.8);
       border-color: rgba(52,211,153,.6);
       color: #6ee7b7;
       box-shadow: 0 0 24px rgba(52,211,153,.45);
     }
-
     #status-pill.lost {
       background: rgba(60,20,20,.75);
       border-color: rgba(248,113,113,.4);
@@ -88,13 +114,12 @@
       background: currentColor;
       animation: pulse 1.4s ease-in-out infinite;
     }
-
     @keyframes pulse {
-      0%,100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: .4; transform: scale(.7); }
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.4; transform:scale(.7); }
     }
 
-    /* ── corner scanner frame ── */
+    /* scanner frame */
     #scanner-frame {
       position: fixed;
       top: 50%; left: 50%;
@@ -103,9 +128,7 @@
       aspect-ratio: 1;
       pointer-events: none;
       z-index: 998;
-      transition: opacity .4s;
     }
-
     #scanner-frame .corner {
       position: absolute;
       width: 28px; height: 28px;
@@ -115,13 +138,11 @@
       transition: border-color .4s;
     }
     #scanner-frame.found .corner { border-color: rgba(52,211,153,.9); }
-
-    .corner.tl { top:0; left:0;  border-top-width:3px;    border-left-width:3px;  border-radius:4px 0 0 0; }
-    .corner.tr { top:0; right:0; border-top-width:3px;    border-right-width:3px; border-radius:0 4px 0 0; }
+    .corner.tl { top:0;    left:0;  border-top-width:3px;    border-left-width:3px;  border-radius:4px 0 0 0; }
+    .corner.tr { top:0;    right:0; border-top-width:3px;    border-right-width:3px; border-radius:0 4px 0 0; }
     .corner.bl { bottom:0; left:0;  border-bottom-width:3px; border-left-width:3px;  border-radius:0 0 0 4px; }
     .corner.br { bottom:0; right:0; border-bottom-width:3px; border-right-width:3px; border-radius:0 0 4px 0; }
 
-    /* scan line */
     .scan-line {
       position: absolute;
       left: 6%; width: 88%; height: 2px;
@@ -132,26 +153,54 @@
     #scanner-frame.found .scan-line {
       background: linear-gradient(90deg, transparent, #34d399, transparent);
     }
-
     @keyframes scan {
-      0%   { top: 4%; opacity: 1; }
+      0%   { top: 4%;  opacity: 1; }
       50%  { top: 92%; opacity: .8; }
-      100% { top: 4%; opacity: 1; }
+      100% { top: 4%;  opacity: 1; }
     }
 
-    /* ── bottom hint ── */
+    /* loading overlay */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(5,5,15,.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: opacity .6s;
+    }
+    #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(99,179,237,.2);
+      border-top-color: #63b3ed;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading-overlay p {
+      color: rgba(200,210,255,.7);
+      font-size: .85rem;
+      letter-spacing: .05em;
+    }
+
+    /* bottom hint */
     #hint {
       position: fixed;
-      bottom: 28px; left: 0; right: 0;
+      bottom: 24px; left: 0; right: 0;
       text-align: center;
-      font-size: .75rem;
-      color: rgba(255,255,255,.35);
+      font-size: .72rem;
+      color: rgba(255,255,255,.32);
       pointer-events: none;
       z-index: 999;
       letter-spacing: .05em;
     }
 
-    /* A-Frame canvas fills viewport */
     a-scene {
       position: fixed;
       top: 0; left: 0;
@@ -162,16 +211,29 @@
 </head>
 <body>
 
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loading-text">載入 AR 引擎中…</p>
+  </div>
+
   <!-- HUD -->
   <div id="hud">
     <div id="title">📷 MindAR 圖像追蹤測試</div>
+
+    <!-- Tab switcher -->
+    <div id="tab-bar">
+      <button class="tab-btn active" id="btn-t1" onclick="switchTarget(1)">目標 1</button>
+      <button class="tab-btn"        id="btn-t2" onclick="switchTarget(2)">目標 2</button>
+    </div>
+
     <div id="status-pill" class="searching">
       <div class="dot"></div>
       <span id="status-text">掃描中，請對準目標圖片…</span>
     </div>
   </div>
 
-  <!-- Scanner frame overlay -->
+  <!-- Scanner frame -->
   <div id="scanner-frame">
     <div class="corner tl"></div>
     <div class="corner tr"></div>
@@ -180,67 +242,33 @@
     <div class="scan-line"></div>
   </div>
 
-  <!-- Bottom hint -->
+  <!-- Hint -->
   <div id="hint">將鏡頭對準你的 AR 目標圖片</div>
 
-  <!-- MindAR A-Frame scene -->
-  <a-scene
-    id="arScene"
-    mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;"
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-  >
-    <a-assets></a-assets>
-
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-    <!-- Target index 0: 偵測到時顯示發光方框 + 文字 -->
-    <a-entity mindar-image-target="targetIndex: 0" id="target0">
-
-      <!-- 半透明發光底板 -->
-      <a-plane
-        width="1" height="1"
-        color="#34d399"
-        opacity="0.18"
-        position="0 0 0.001"
-        material="shader: flat; side: double;"
-      ></a-plane>
-
-      <!-- 外框線 -->
-      <a-plane
-        width="1.05" height="1.05"
-        color="#34d399"
-        opacity="0.6"
-        position="0 0 0"
-        material="wireframe: true; shader: flat;"
-      ></a-plane>
-
-      <!-- 辨識成功文字 -->
-      <a-text
-        value="✔ 圖像辨識成功！"
-        align="center"
-        color="#6ee7b7"
-        width="2"
-        position="0 0.62 0"
-        font="https://cdn.aframe.io/fonts/Roboto-msdf.json"
-        font-image="https://cdn.aframe.io/fonts/Roboto-msdf.png"
-      ></a-text>
-
-    </a-entity>
-  </a-scene>
+  <!-- AR Scene (will be rebuilt on switch) -->
+  <div id="scene-container"></div>
 
   <script>
-    const pill     = document.getElementById('status-pill');
-    const pillText = document.getElementById('status-text');
-    const frame    = document.getElementById('scanner-frame');
-    const hint     = document.getElementById('hint');
+    const pill      = document.getElementById('status-pill');
+    const pillText  = document.getElementById('status-text');
+    const frame     = document.getElementById('scanner-frame');
+    const hint      = document.getElementById('hint');
+    const loadingEl = document.getElementById('loading-overlay');
+    const loadTxt   = document.getElementById('loading-text');
+
+    const MINDS = {
+      1: './targets.mind',
+      2: './targets2.mind'
+    };
+
+    let currentTarget = 1;
+    let sceneEl = null;
+    let lostTimer = null;
 
     function setFound(on) {
+      clearTimeout(lostTimer);
       if (on) {
-        pill.classList.replace('searching', 'found') || (pill.className = 'found');
-        pill.classList.remove('lost');
+        pill.className = 'found';
         pillText.textContent = '✅ 目標圖片已辨識！';
         frame.classList.add('found');
         hint.textContent = 'MindAR 成功追蹤目標 🎉';
@@ -249,10 +277,8 @@
         pillText.textContent = '❌ 目標丟失，繼續掃描…';
         frame.classList.remove('found');
         hint.textContent = '將鏡頭對準你的 AR 目標圖片';
-
-        // switch back to searching after 1.5 s
-        setTimeout(() => {
-          if (!pill.classList.contains('found')) {
+        lostTimer = setTimeout(() => {
+          if (pill.className !== 'found') {
             pill.className = 'searching';
             pillText.textContent = '掃描中，請對準目標圖片…';
           }
@@ -260,12 +286,103 @@
       }
     }
 
-    // Wait for A-Frame + MindAR to be ready
-    document.querySelector('a-scene').addEventListener('loaded', () => {
-      const target = document.getElementById('target0');
-      target.addEventListener('targetFound',  () => setFound(true));
-      target.addEventListener('targetLost',   () => setFound(false));
-    });
+    function buildScene(mindSrc) {
+      // Remove existing scene
+      const container = document.getElementById('scene-container');
+      container.innerHTML = '';
+
+      const scene = document.createElement('a-scene');
+      scene.setAttribute('mindar-image',
+        `imageTargetSrc: ${mindSrc}; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;`);
+      scene.setAttribute('color-space', 'sRGB');
+      scene.setAttribute('renderer', 'colorManagement: true, physicallyCorrectLights');
+      scene.setAttribute('vr-mode-ui', 'enabled: false');
+      scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
+
+      // Camera
+      const cam = document.createElement('a-camera');
+      cam.setAttribute('position', '0 0 0');
+      cam.setAttribute('look-controls', 'enabled: false');
+      scene.appendChild(cam);
+
+      // Target entity
+      const targetEntity = document.createElement('a-entity');
+      targetEntity.setAttribute('mindar-image-target', 'targetIndex: 0');
+      targetEntity.id = 'ar-target';
+
+      const plane = document.createElement('a-plane');
+      plane.setAttribute('width', '1');
+      plane.setAttribute('height', '1');
+      plane.setAttribute('color', '#34d399');
+      plane.setAttribute('opacity', '0.18');
+      plane.setAttribute('position', '0 0 0.001');
+      plane.setAttribute('material', 'shader: flat; side: double;');
+
+      const wireframe = document.createElement('a-plane');
+      wireframe.setAttribute('width', '1.05');
+      wireframe.setAttribute('height', '1.05');
+      wireframe.setAttribute('color', '#34d399');
+      wireframe.setAttribute('opacity', '0.6');
+      wireframe.setAttribute('material', 'wireframe: true; shader: flat;');
+
+      const text = document.createElement('a-text');
+      text.setAttribute('value', `✔ 目標 ${currentTarget} 辨識成功！`);
+      text.setAttribute('align', 'center');
+      text.setAttribute('color', '#6ee7b7');
+      text.setAttribute('width', '2');
+      text.setAttribute('position', '0 0.62 0');
+
+      targetEntity.appendChild(plane);
+      targetEntity.appendChild(wireframe);
+      targetEntity.appendChild(text);
+      scene.appendChild(targetEntity);
+
+      // Events
+      scene.addEventListener('loaded', () => {
+        // Hide loading after short delay
+        setTimeout(() => {
+          loadingEl.classList.add('hidden');
+          pill.className = 'searching';
+          pillText.textContent = '掃描中，請對準目標圖片…';
+        }, 800);
+
+        const t = document.getElementById('ar-target');
+        t.addEventListener('targetFound', () => setFound(true));
+        t.addEventListener('targetLost',  () => setFound(false));
+      });
+
+      container.appendChild(scene);
+      sceneEl = scene;
+    }
+
+    function switchTarget(num) {
+      if (num === currentTarget) return;
+      currentTarget = num;
+
+      // Update tabs
+      document.getElementById('btn-t1').classList.toggle('active', num === 1);
+      document.getElementById('btn-t2').classList.toggle('active', num === 2);
+
+      // Reset status
+      clearTimeout(lostTimer);
+      frame.classList.remove('found');
+      pill.className = 'searching';
+      pillText.textContent = '切換中…';
+      hint.textContent = '將鏡頭對準你的 AR 目標圖片';
+
+      // Show loading
+      loadTxt.textContent = `載入目標 ${num} 中…`;
+      loadingEl.classList.remove('hidden');
+      loadingEl.style.opacity = '1';
+      loadingEl.style.pointerEvents = 'all';
+
+      // Rebuild scene after a tick
+      setTimeout(() => buildScene(MINDS[num]), 300);
+    }
+
+    // Initial load
+    loadTxt.textContent = '載入 AR 引擎中…';
+    buildScene(MINDS[1]);
   </script>
 </body>
 </html>
