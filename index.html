@@ -256,10 +256,11 @@
     const loadingEl = document.getElementById('loading-overlay');
     const loadTxt   = document.getElementById('loading-text');
 
-    const MINDS = {
+    const MIND_URLS = {
       1: './targets.mind',
       2: './targets2.mind'
     };
+    const MINDS = { 1: null, 2: null }; // 將存放 Blob URL
 
     let currentTarget = 1;
     let sceneEl = null;
@@ -380,9 +381,35 @@
       setTimeout(() => buildScene(MINDS[num]), 300);
     }
 
-    // Initial load
-    loadTxt.textContent = '載入 AR 引擎中…';
-    buildScene(MINDS[1]);
+    // 預載 Mind 檔案並轉為 Blob URL，省去切換時的下載與讀取時間
+    async function initApp() {
+      loadTxt.textContent = '正在預載 AR 目標模型… (1/2)';
+      try {
+        // 並行下載兩個模型
+        const [res1, res2] = await Promise.all([
+          fetch(MIND_URLS[1]),
+          fetch(MIND_URLS[2])
+        ]);
+        
+        loadTxt.textContent = '正在處理模型資料… (2/2)';
+        const [blob1, blob2] = await Promise.all([
+          res1.blob(),
+          res2.blob()
+        ]);
+
+        // 將 Blob 轉為瀏覽器內部 URL
+        MINDS[1] = URL.createObjectURL(blob1);
+        MINDS[2] = URL.createObjectURL(blob2);
+
+        loadTxt.textContent = '啟動 AR 引擎與相機中…';
+        buildScene(MINDS[1]);
+      } catch (err) {
+        console.error('Mind files preload failed:', err);
+        loadTxt.textContent = '載入失敗，請檢查檔案後重新整理';
+      }
+    }
+
+    initApp();
   </script>
 </body>
 </html>
